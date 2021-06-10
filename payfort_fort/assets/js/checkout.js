@@ -86,10 +86,10 @@ function initPayfortFortPayment(form) {
         'dataType': 'json',
         'data': data,
         'async': false
-    }).complete(function (response) {
+    }).always(function (response) {
         data = '';
-        if(response.form) {
-            data = response;
+        if(response.form || response.messages) {
+            data = response || response.messages;
         }
         else{
             var code = response.responseText;
@@ -115,6 +115,43 @@ function initPayfortFortPayment(form) {
             return !1;
         }
         if (data.form) {
+            // be able to submit files from checkout
+            var fd = new FormData();
+            let hasFiles = false;
+
+            //searches in the form
+            var file = jQuery(form).find('input[type="file"]');
+            file.each((i, element) => {
+                var individual_file = element.files[0];
+                if(individual_file != undefined) {
+                    hasFiles = true;
+                    var field_name = jQuery(element).attr("name");
+                    fd.append(field_name, individual_file);
+                }
+            })
+            let nonce = wc_checkout_params.update_order_review_nonce || jQuery('#woocommerce-process-checkout-nonce').val();
+            // fd.append('action', 'upload_image');
+            if(hasFiles > 0) {
+                fd.append('security', nonce);
+                fd.append('post_data', jQuery(form).serialize());
+                let referEl = jQuery('input[name="_wp_http_referer"]');
+                let url = referEl.val();
+                jQuery.ajax({
+                    type: 'POST',
+                    url: url || ajaxurl,  // nb-----------------have you got a variable for ajaxurl? if not insert var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>'; somewhere in your template...or google the wp way!
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function(response){
+                        //just spit out the response to the console to catch php errors etc..
+                        console.log(response);
+                    }
+                });
+            }
+
+            return;
+
+            //
             jQuery('#frm_payfort_fort_payment').remove();
             jQuery('body').append(data.form);
             window.success = true;

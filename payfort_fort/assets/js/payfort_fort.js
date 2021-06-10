@@ -123,7 +123,7 @@ var payfortFortMerchantPage2 = (function () {
 var payfortFortMerchantPage = (function () {
     return {
         showMerchantPage: function(gatewayUrl) {
-            if(jQuery("#payfort_merchant_page").size()) {
+            if(jQuery("#payfort_merchant_page").length) {
                 jQuery( "#payfort_merchant_page" ).remove();
             }
             jQuery('<iframe  name="payfort_merchant_page" id="payfort_merchant_page"height="650px" frameborder="0" scrolling="no" onload="payfortFortMerchantPage.iframeLoaded(this)" style="display:none"></iframe>').appendTo('#pf_iframe_content');
