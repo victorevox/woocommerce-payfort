@@ -114,6 +114,22 @@ function initPayfortFortPayment(form) {
             showError(form, data);
             return !1;
         }
+
+        function continueWithCheckout() {
+            // return;
+            jQuery('#frm_payfort_fort_payment').remove();
+            jQuery('body').append(data.form);
+            window.success = true;
+            if(isMerchantPage2Method(pament_method)) {
+                payfortFortMerchantPage2.submitMerchantPage();
+            }
+            else if(isMerchantPageMethod(pament_method)) {
+                payfortFortMerchantPage.showMerchantPage(jQuery('#frm_payfort_fort_payment').attr('action'));
+            }
+            else{                   
+                jQuery( "#frm_payfort_fort_payment" ).submit();
+            }
+        }
         if (data.form) {
             // be able to submit files from checkout
             var fd = new FormData();
@@ -142,28 +158,26 @@ function initPayfortFortPayment(form) {
                     data: fd,
                     contentType: false,
                     processData: false,
-                    success: function(response){
+                    success: function(data){
                         //just spit out the response to the console to catch php errors etc..
-                        console.log(response);
+                        console.log(data);
+                        if(data.result == 'failure') {
+                            showError(form, data);
+                            return !1;
+                        } else {
+                            continueWithCheckout();
+                        }
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        showError(form, '<ul class="woocommerce-error" role="alert"><li>Server error</li></ul>')
                     }
                 });
+            } else {
+                continueWithCheckout();
             }
 
-            return;
-
-            //
-            jQuery('#frm_payfort_fort_payment').remove();
-            jQuery('body').append(data.form);
-            window.success = true;
-            if(isMerchantPage2Method(pament_method)) {
-                payfortFortMerchantPage2.submitMerchantPage();
-            }
-            else if(isMerchantPageMethod(pament_method)) {
-                payfortFortMerchantPage.showMerchantPage(jQuery('#frm_payfort_fort_payment').attr('action'));
-            }
-            else{                   
-                jQuery( "#frm_payfort_fort_payment" ).submit();
-            }
+            
         }
     });
     return !1;
